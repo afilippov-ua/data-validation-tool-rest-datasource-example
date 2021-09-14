@@ -24,20 +24,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class CompaniesService {
+public class CompaniesService implements DataService<Company> {
     private final List<Company> data;
 
     public CompaniesService(CompaniesGenerator companiesGenerator) {
         this.data = companiesGenerator.generate();
     }
 
-    public List<Company> getCompanies(Integer page, Integer pageSize) {
+    @Override
+    public List<Company> getData(Integer offset, Integer limit) {
         return data.stream()
-                .skip((page == 0) ? 0 : (long) (page - 1) * pageSize)
-                .limit(pageSize)
+                .skip(offset)
+                .limit(limit)
                 .collect(Collectors.toList());
     }
 
+    @Override
     public int getSize() {
         return data.size();
     }

@@ -40,7 +40,7 @@ public class CompaniesController {
     public List<Company> getCompanies(@RequestParam("page") Integer page,
                                       @RequestParam("pageSize") Integer pageSize) {
         log.debug("Companies data has been requested. Page: {}, pageSize: {}", page, pageSize);
-        return companiesService.getCompanies(page, pageSize);
+        return companiesService.getData(page, pageSize);
     }
 
     @GetMapping("/size")

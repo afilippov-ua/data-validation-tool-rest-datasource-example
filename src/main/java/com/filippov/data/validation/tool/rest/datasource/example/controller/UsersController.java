@@ -40,7 +40,7 @@ public class UsersController {
     public List<User> getUsers(@RequestParam("page") Integer page,
                                @RequestParam("pageSize") Integer pageSize) {
         log.debug("Users data has been requested. Page: {}, pageSize: {}", page, pageSize);
-        return usersService.getUsers(page, pageSize);
+        return usersService.getData(page, pageSize);
     }
 
     @GetMapping("/size")

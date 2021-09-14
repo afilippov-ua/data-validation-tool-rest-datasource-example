@@ -40,7 +40,7 @@ public class DepartmentsController {
     public List<Department> getDepartments(@RequestParam("page") Integer page,
                                            @RequestParam("pageSize") Integer pageSize) {
         log.debug("Departments data has been requested. Page: {}, pageSize: {}", page, pageSize);
-        return departmentsService.getDepartments(page, pageSize);
+        return departmentsService.getData(page, pageSize);
     }
 
     @GetMapping("/size")
