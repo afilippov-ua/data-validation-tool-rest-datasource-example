@@ -49,19 +49,18 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.filippov.data.validation.tool:data-validation-tool-metadata-model:1.0.1-SNAPSHOT'
+
     implementation('org.springframework.boot:spring-boot-starter-web') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
     }
     implementation 'org.springframework.boot:spring-boot-starter-jetty'
     implementation 'org.springframework.boot:spring-boot-starter-log4j2'
-    implementation 'com.filippov.data.validation.tool:data-validation-tool-metadata-model:1.0.0-SNAPSHOT'
-
-    implementation 'io.springfox:springfox-boot-starter:3.0.0'
     implementation 'io.springfox:springfox-swagger-ui:3.0.0'
-
-    compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'io.springfox:springfox-boot-starter:3.0.0'
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
