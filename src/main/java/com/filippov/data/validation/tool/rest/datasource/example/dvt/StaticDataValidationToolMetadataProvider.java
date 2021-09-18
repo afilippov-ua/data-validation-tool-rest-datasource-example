@@ -31,6 +31,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
+import static java.util.Map.entry;
 
 @Component
 public class StaticDataValidationToolMetadataProvider {
@@ -100,17 +101,49 @@ public class StaticDataValidationToolMetadataProvider {
             COMPANIES_TABLE.getName(), Company.class,
             DEPARTMENTS_TABLE.getName(), Department.class);
 
+    private final Map<DatasourceColumn, Function<?, Object>> extractorsMap = Map.ofEntries(
+            entry(getDatasourceColumn(USERS_TABLE, "intId"), (Function<User, Object>) User::getIntId),
+            entry(getDatasourceColumn(USERS_TABLE, "longId"), (Function<User, Object>) User::getLongId),
+            entry(getDatasourceColumn(USERS_TABLE, "username"), (Function<User, Object>) User::getUsername),
+            entry(getDatasourceColumn(USERS_TABLE, "password"), (Function<User, Object>) User::getPassword),
+            entry(getDatasourceColumn(USERS_TABLE, "birthDate"), (Function<User, Object>) User::getBirthDate),
+            entry(getDatasourceColumn(USERS_TABLE, "groupName"), (Function<User, Object>) User::getGroupName),
+            entry(getDatasourceColumn(DEPARTMENTS_TABLE, "intId"), (Function<Department, Object>) Department::getIntId),
+            entry(getDatasourceColumn(DEPARTMENTS_TABLE, "longId"), (Function<Department, Object>) Department::getLongId),
+            entry(getDatasourceColumn(DEPARTMENTS_TABLE, "name"), (Function<Department, Object>) Department::getName),
+            entry(getDatasourceColumn(DEPARTMENTS_TABLE, "numberOfEmployees"), (Function<Department, Object>) Department::getEmployees),
+            entry(getDatasourceColumn(DEPARTMENTS_TABLE, "employees"), (Function<Department, Object>) Department::getEmployees),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "intId"), (Function<Company, Object>) Company::getIntId),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "longId"), (Function<Company, Object>) Company::getLongId),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "active"), (Function<Company, Object>) Company::getActive),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "companyName"), (Function<Company, Object>) Company::getCompanyName),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "lastRevenue"), (Function<Company, Object>) Company::getLastRevenue),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "country"), (Function<Company, Object>) Company::getCountry),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "dateOfCreation"), (Function<Company, Object>) Company::getDateOfCreation),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "foundersFirstNames"), (Function<Company, Object>) Company::getFoundersFirstNames),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "foundersLastNames"), (Function<Company, Object>) Company::getFoundersLastNames),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "categories"), (Function<Company, Object>) Company::getCategories),
+            entry(getDatasourceColumn(COMPANIES_TABLE, "competitors"), (Function<Company, Object>) Company::getCompetitors));
+
     public DatasourceMetadata getDatasourceMetadata() {
         return METADATA;
     }
 
-    public Optional<DatasourceTable> getDatasourceTable(String tableName) {
-        return Optional.ofNullable(TABLES.get(tableName));
+    @SuppressWarnings("unchecked")
+    public Function<Object, Object> getExtractor(DatasourceColumn datasourceColumn) {
+        return (Function<Object, Object>) extractorsMap.get(datasourceColumn);
     }
 
-    public Optional<DatasourceColumn> getDatasourceColumn(DatasourceTable table, String columnName) {
+    public DatasourceTable getDatasourceTable(String tableName) {
+        return Optional.ofNullable(TABLES.get(tableName))
+                .orElseThrow(() -> new IllegalArgumentException("Table with table name: " + tableName + " wasn't found"));
+    }
+
+    public DatasourceColumn getDatasourceColumn(DatasourceTable table, String columnName) {
         return Optional.ofNullable(COLUMNS.get(table))
-                .map(m -> m.get(columnName));
+                .map(m -> m.get(columnName))
+                .orElseThrow(() -> new IllegalArgumentException("Column with name: "
+                        + table.getPrimaryKey() + " wasn't found for table: " + table.getName()));
     }
 
     public Class<?> getDataType(String tableName) {

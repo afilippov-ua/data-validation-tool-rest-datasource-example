@@ -31,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 @Slf4j
 @RestController
@@ -58,38 +59,33 @@ public class DataValidationToolController extends AbstractDataValidationToolCont
 
     @Override
     public ColumnData getData(DatasourceColumn datasourceColumn, int offset, int limit) {
-        final DatasourceTable table = metadataProvider.getDatasourceTable(datasourceColumn.getTableName())
-                .orElseThrow(() -> new IllegalArgumentException("Table with table name: "
-                        + datasourceColumn.getTableName() + " wasn't found"));
-        final DatasourceColumn column = metadataProvider.getDatasourceColumn(table, datasourceColumn.getName())
-                .orElseThrow(() -> new IllegalArgumentException("Column with column name: "
-                        + datasourceColumn.getName() + " wasn't found for table: " + datasourceColumn.getTableName()));
+        final DatasourceTable table = metadataProvider.getDatasourceTable(datasourceColumn.getTableName());
+        final DatasourceColumn keyColumn = metadataProvider.getDatasourceColumn(table, table.getPrimaryKey());
+        final DatasourceColumn valueColumn = metadataProvider.getDatasourceColumn(table, datasourceColumn.getName());
 
-        final DataValidationToolFieldExtractor keyExtractor =
-                new DataValidationToolFieldExtractor(metadataProvider.getDataType(table.getName()), table.getPrimaryKey());
-        final DataValidationToolFieldExtractor valueExtractor =
-                new DataValidationToolFieldExtractor(metadataProvider.getDataType(table.getName()), column.getName());
-
-        keyExtractor.prepare();
-        valueExtractor.prepare();
+        final Function<Object, Object> keyExtractor = metadataProvider.getExtractor(keyColumn);
+        final Function<Object, Object> valueExtractor = metadataProvider.getExtractor(valueColumn);
 
         final List<Object> keys = new ArrayList<>();
         final List<Object> values = new ArrayList<>();
-
         serviceMap.get(table.getName()).getData(offset, limit)
                 .forEach(obj -> {
-                    keys.add(keyExtractor.extract(obj));
-                    values.add(valueExtractor.extract(obj));
+                    keys.add(keyExtractor.apply(obj));
+                    values.add(valueExtractor.apply(obj));
                 });
 
-        keyExtractor.close();
-        valueExtractor.close();
-
         return ColumnData.builder()
-                .keyColumn(table.getPrimaryKey())
-                .dataColumn(column.getName())
+                .keyColumn(keyColumn)
+                .dataColumn(valueColumn)
                 .keys(keys)
                 .values(values)
                 .build();
+    }
+
+    @Override
+    public int getSize(DatasourceColumn datasourceColumn) {
+        final DatasourceTable table = metadataProvider.getDatasourceTable(datasourceColumn.getTableName());
+        final DatasourceColumn column = metadataProvider.getDatasourceColumn(table, datasourceColumn.getName());
+        return serviceMap.get(table.getName()).getSize();
     }
 }
